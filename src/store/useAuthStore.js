@@ -3,7 +3,8 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+const BASE_URL ="http://localhost:5000/api"
+// const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "/api";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -31,7 +32,9 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      const res = await axiosInstance.post("/auth/signup", data);
+      const res = await axiosInstance.post("/auth/signup", data, {
+        withCredentials: true
+      });
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
@@ -45,7 +48,9 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", data);
+      const res = await axiosInstance.post("/auth/login", data, {
+        withCredentials: true
+      });
       set({ authUser: res.data });
       toast.success("Logged in successfully");
 
@@ -71,7 +76,9 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
-      const res = await axiosInstance.put("/auth/update-profile", data);
+      const res = await axiosInstance.put("/auth/profileUpdate", data, {
+        withCredentials: true
+      });
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {

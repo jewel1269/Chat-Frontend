@@ -28,14 +28,39 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const uploadToImgbb = async (base64Image) => {
+    const imgbbKey = "ccf8111c50b51793f51c952e97443e31";
+    const base64Data = base64Image.split(",")[1];
+
+    const formData = new FormData();
+    formData.append("key", imgbbKey);
+    formData.append("image", base64Data);
+
+    const response = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!data.success) throw new Error("Failed to upload image");
+    return data.data.url;
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
 
     try {
+      let imageUrl = null;
+      if (imagePreview) {
+        imageUrl = await uploadToImgbb(imagePreview);
+      }
+
+      console.log(imageUrl, "hello");
+
       await sendMessage({
         text: text.trim(),
-        image: imagePreview,
+        image: imageUrl,
       });
 
       // Clear form
@@ -44,6 +69,7 @@ const MessageInput = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
+      toast.error("Failed to send message");
     }
   };
 
@@ -68,7 +94,6 @@ const MessageInput = () => {
           </div>
         </div>
       )}
-
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
         <div className="flex-1 flex gap-2">
           <input

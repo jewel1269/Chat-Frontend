@@ -10,15 +10,23 @@ const ProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    const formData = new FormData();
+    formData.append('image', file);
 
-    reader.readAsDataURL(file);
-
-    reader.onload = async () => {
-      const base64Image = reader.result;
-      setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
-    };
+    try {
+      const response = await fetch('https://api.imgbb.com/1/upload?key=ccf8111c50b51793f51c952e97443e31', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setSelectedImg(data.data.url);
+        await updateProfile({ avatar: data.data.url });
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   };
 
   return (
@@ -35,7 +43,7 @@ const ProfilePage = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <img
-                src={selectedImg || authUser.profilePic || "/avatar.png"}
+                src={selectedImg || authUser.avatar || "/avatar.png"}
                 alt="Profile"
                 className="size-32 rounded-full object-cover border-4 "
               />
